@@ -1,0 +1,71 @@
+{
+  "name": "node-version-call-local",
+  "version": "0.0.0",
+  "description": "Call a function in a Node version found in PATH",
+  "keywords": [
+    "node",
+    "version",
+    "call",
+    "exec",
+    "path",
+    "find",
+    "semver",
+    "function",
+    "worker",
+    "typescript"
+  ],
+  "homepage": "https://github.com/kmalakoff/node-version-call-local#README.md",
+  "bugs": {
+    "url": "https://github.com/kmalakoff/node-version-call-local/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kmalakoff/node-version-call-local.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Kevin Malakoff",
+    "email": "kmalakoff@gmail.com",
+    "url": "https://github.com/kmalakoff"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "dist/cjs/index.js",
+  "source": "src/index.ts",
+  "types": "dist/cjs/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsds build",
+    "format": "tsds format",
+    "prepublishOnly": "tsds validate",
+    "test": "tsds test:node --no-timeouts",
+    "test:engines": "nvu engines tsds test:node --no-timeouts",
+    "version": "tsds version"
+  },
+  "dependencies": {
+    "env-path-key": "^1.0.0",
+    "function-exec-sync": "^1.1.6",
+    "node-exec-path": "^1.0.0",
+    "node-version-utils": "^1.0.2",
+    "semver": "5.7.2"
+  },
+  "devDependencies": {
+    "@types/mocha": "*",
+    "@types/node": "*",
+    "lodash.keys": "^4.2.0",
+    "node-version-use": "*",
+    "ts-dev-stack": "*",
+    "tsds-config": "*"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}
