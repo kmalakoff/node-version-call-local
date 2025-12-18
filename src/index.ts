@@ -34,7 +34,7 @@ function findExecPath(version: string, env?: NodeJS.ProcessEnv): string {
 export default function call(version: string, workerPath: string, options?: CallOptions, ...args: unknown[]): unknown {
   const opts = options || {};
   const callbacks = opts.callbacks === true; // default false (matches function-exec-sync)
-  const useSpawnOptions = opts.spawnOptions === true; // default false
+  const useSpawnOptions = opts.spawnOptions !== false; // default true
   const env = opts.env || process.env;
 
   // Check if current process satisfies the version constraint
@@ -84,7 +84,7 @@ export default function call(version: string, workerPath: string, options?: Call
 export function bind(version: string, workerPath: string, options?: BindOptions): BoundCaller {
   const opts = options || {};
   const callbacks = opts.callbacks === true; // default false (matches function-exec-sync)
-  const useSpawnOptions = opts.spawnOptions === true;
+  const useSpawnOptions = opts.spawnOptions !== false; // default true
   const env = opts.env || process.env;
 
   // Cache these on first call (lazy)

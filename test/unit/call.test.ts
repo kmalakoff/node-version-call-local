@@ -6,6 +6,7 @@ import pathKey from 'env-path-key';
 import keys from 'lodash.keys';
 import call from 'node-version-call-local';
 import path from 'path';
+import semver from 'semver';
 import url from 'url';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
@@ -42,6 +43,8 @@ describe('call', () => {
       const fnPath = path.join(DATA, 'processVersion.cjs');
       const result = call(version, fnPath, { callbacks: false }) as string;
       assert.equal(result[0], 'v');
+      // Verify version satisfies the constraint
+      assert.ok(semver.satisfies(result, version), `${result} should satisfy ${version}`);
     });
   });
 
@@ -97,16 +100,26 @@ describe('call', () => {
   });
 
   describe('spawnOptions', () => {
-    it('works with spawnOptions: true', () => {
-      const fnPath = path.join(DATA, 'processVersion.cjs');
-      const result = call(process.version, fnPath, { callbacks: false, spawnOptions: true }) as string;
-      assert.equal(result[0], 'v');
-    });
-
-    it('works with spawnOptions: false (default)', () => {
+    it('defaults spawnOptions to true', () => {
       const fnPath = path.join(DATA, 'processVersion.cjs');
       const result = call(process.version, fnPath, { callbacks: false }) as string;
-      assert.equal(result[0], 'v');
+      assert.equal(result, process.version);
+    });
+
+    it('works with spawnOptions: false', () => {
+      const fnPath = path.join(DATA, 'processVersion.cjs');
+      const result = call(process.version, fnPath, { callbacks: false, spawnOptions: false }) as string;
+      assert.equal(result, process.version);
+    });
+
+    it('spawnOptions ensures child processes use correct Node version', () => {
+      const fnPath = path.join(DATA, 'childProcessVersion.cjs');
+      // Run with version different from current process
+      const result = call('>0', fnPath, { callbacks: false }) as { workerVersion: string; childVersion: string };
+      // Worker and child should both be same version
+      assert.equal(result.workerVersion, result.childVersion);
+      // Verify version satisfies the constraint
+      assert.ok(semver.satisfies(result.workerVersion, '>0'), `${result.workerVersion} should satisfy >0`);
     });
   });
 });

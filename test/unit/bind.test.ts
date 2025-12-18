@@ -5,6 +5,7 @@ import assert from 'assert';
 import pathKey from 'env-path-key';
 import { bind } from 'node-version-call-local';
 import path from 'path';
+import semver from 'semver';
 import url from 'url';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
@@ -86,7 +87,7 @@ describe('bind', () => {
       const fnPath = path.join(DATA, 'processVersion.cjs');
       const worker = bind(process.version, fnPath);
       const result = worker() as string;
-      assert.equal(result[0], 'v');
+      assert.equal(result, process.version);
     });
 
     it('defaults env to process.env', () => {
@@ -100,11 +101,28 @@ describe('bind', () => {
   });
 
   describe('spawnOptions', () => {
-    it('works with spawnOptions: true', () => {
+    it('defaults spawnOptions to true', () => {
       const fnPath = path.join(DATA, 'processVersion.cjs');
-      const worker = bind(process.version, fnPath, { callbacks: false, spawnOptions: true });
+      const worker = bind(process.version, fnPath, { callbacks: false });
       const result = worker() as string;
-      assert.equal(result[0], 'v');
+      assert.equal(result, process.version);
+    });
+
+    it('works with spawnOptions: false', () => {
+      const fnPath = path.join(DATA, 'processVersion.cjs');
+      const worker = bind(process.version, fnPath, { callbacks: false, spawnOptions: false });
+      const result = worker() as string;
+      assert.equal(result, process.version);
+    });
+
+    it('spawnOptions ensures child processes use correct Node version', () => {
+      const fnPath = path.join(DATA, 'childProcessVersion.cjs');
+      const worker = bind('>0', fnPath, { callbacks: false });
+      const result = worker() as { workerVersion: string; childVersion: string };
+      // Worker and child should both be same version
+      assert.equal(result.workerVersion, result.childVersion);
+      // Verify version satisfies the constraint
+      assert.ok(semver.satisfies(result.workerVersion, '>0'), `${result.workerVersion} should satisfy >0`);
     });
   });
 
