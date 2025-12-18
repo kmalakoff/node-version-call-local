@@ -40,38 +40,32 @@ export default function call(version: string, workerPath: string, options?: Call
   const useSpawnOptions = opts.spawnOptions !== false; // default true
   const env = opts.env || process.env;
 
-  // Check if current process satisfies the version constraint
   const currentSatisfies = version === process.version || semver.satisfies(process.version, version);
 
-  if (currentSatisfies) {
-    // Local execution
-    if (callbacks) {
-      const PATH_KEY = pathKey();
-      if (opts.env && !opts.env[PATH_KEY]) {
-        throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
-      }
-      const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
-      if (!functionExec) functionExec = _require('function-exec-sync');
-      return functionExec.apply(null, [execOptions, workerPath, ...args]);
-    }
+  if (currentSatisfies && !callbacks) {
     const fn = _require(workerPath);
     return typeof fn === 'function' ? fn.apply(null, args) : fn;
   }
 
-  // Find Node in PATH
-  const execPath = findExecPath(version, opts.env);
-
-  // Execute in found Node
   if (!functionExec) functionExec = _require('function-exec-sync');
 
+  if (currentSatisfies) {
+    const PATH_KEY = pathKey();
+    if (opts.env && !opts.env[PATH_KEY]) {
+      throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
+    }
+    const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
+    return functionExec.apply(null, [execOptions, workerPath, ...args]);
+  }
+
+  const execPath = findExecPath(version, opts.env);
+
   if (useSpawnOptions) {
-    // Full environment setup for npm operations
     const installPath = deriveInstallPath(execPath);
     const execOptions = spawnOptions(installPath, { execPath, sleep: SLEEP_MS, callbacks, env } as SpawnOptions);
     return functionExec.apply(null, [execOptions, workerPath, ...args]);
   }
 
-  // Simple execution (like get-file-compat)
   const execOptions = { execPath, sleep: SLEEP_MS, callbacks, env };
   return functionExec.apply(null, [execOptions, workerPath, ...args]);
 }
@@ -91,47 +85,38 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
   const useSpawnOptions = opts.spawnOptions !== false; // default true
   const env = opts.env || process.env;
 
-  // Cache these on first call (lazy)
   let initialized = false;
   let currentSatisfies: boolean;
   let cachedExecPath: string | null = null;
 
   return function boundCaller(...args: unknown[]): unknown {
-    // Check if last arg is a callback first
     const lastArg = args[args.length - 1];
     const hasCallback = typeof lastArg === 'function';
 
     const execute = (): unknown => {
-      // Lazy initialization on first call
       if (!initialized) {
         currentSatisfies = version === process.version || semver.satisfies(process.version, version);
-        if (!currentSatisfies) {
-          cachedExecPath = findExecPath(version, opts.env);
-        }
+        if (!currentSatisfies) cachedExecPath = findExecPath(version, opts.env);
         initialized = true;
       }
 
-      if (currentSatisfies) {
-        // Local execution
-        if (callbacks) {
-          const PATH_KEY = pathKey();
-          if (opts.env && !opts.env[PATH_KEY]) {
-            throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
-          }
-          const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
-          if (!functionExec) functionExec = _require('function-exec-sync');
-          return functionExec.apply(null, [execOptions, workerPath, ...args]);
-        }
+      if (currentSatisfies && !callbacks) {
         const fn = _require(workerPath);
         return typeof fn === 'function' ? fn.apply(null, args) : fn;
       }
 
-      // Execute in cached Node - cachedExecPath is guaranteed to be set when currentSatisfies is false
-      if (cachedExecPath === null) {
-        throw new Error('node-version-call-local: Internal error - execPath should be set');
-      }
-      const execPath = cachedExecPath;
       if (!functionExec) functionExec = _require('function-exec-sync');
+
+      if (currentSatisfies) {
+        const PATH_KEY = pathKey();
+        if (opts.env && !opts.env[PATH_KEY]) {
+          throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
+        }
+        const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
+        return functionExec.apply(null, [execOptions, workerPath, ...args]);
+      }
+
+      const execPath = cachedExecPath;
 
       if (useSpawnOptions) {
         const installPath = deriveInstallPath(execPath);
