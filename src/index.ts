@@ -13,8 +13,11 @@ export type * from './types.ts';
 const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
 const SLEEP_MS = 60;
 
+let functionExec: typeof functionExecSync = null;
+let satisfiesSemverSync: (version: string, options?: satisfiesSemverSyncOptions) => string | null = null;
+
 function findExecPath(version: string, env?: NodeJS.ProcessEnv): string {
-  const satisfiesSemverSync = _require('node-exec-path').satisfiesSemverSync as (version: string, options?: satisfiesSemverSyncOptions) => string | null;
+  if (!satisfiesSemverSync) satisfiesSemverSync = _require('node-exec-path').satisfiesSemverSync;
   const options = env ? { env } : {};
   const execPath = satisfiesSemverSync(version, options);
   if (!execPath) {
@@ -48,7 +51,8 @@ export default function call(version: string, workerPath: string, options?: Call
         throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
       }
       const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
-      return (_require('function-exec-sync') as typeof functionExecSync).apply(null, [execOptions, workerPath, ...args]);
+      if (!functionExec) functionExec = _require('function-exec-sync');
+      return functionExec.apply(null, [execOptions, workerPath, ...args]);
     }
     const fn = _require(workerPath);
     return typeof fn === 'function' ? fn.apply(null, args) : fn;
@@ -58,7 +62,7 @@ export default function call(version: string, workerPath: string, options?: Call
   const execPath = findExecPath(version, opts.env);
 
   // Execute in found Node
-  const functionExec = _require('function-exec-sync') as typeof functionExecSync;
+  if (!functionExec) functionExec = _require('function-exec-sync');
 
   if (useSpawnOptions) {
     // Full environment setup for npm operations
@@ -115,7 +119,8 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
             throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
           }
           const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks: true, env };
-          return (_require('function-exec-sync') as typeof functionExecSync).apply(null, [execOptions, workerPath, ...args]);
+          if (!functionExec) functionExec = _require('function-exec-sync');
+          return functionExec.apply(null, [execOptions, workerPath, ...args]);
         }
         const fn = _require(workerPath);
         return typeof fn === 'function' ? fn.apply(null, args) : fn;
@@ -126,7 +131,7 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
         throw new Error('node-version-call-local: Internal error - execPath should be set');
       }
       const execPath = cachedExecPath;
-      const functionExec = _require('function-exec-sync') as typeof functionExecSync;
+      if (!functionExec) functionExec = _require('function-exec-sync');
 
       if (useSpawnOptions) {
         const installPath = deriveInstallPath(execPath);
