@@ -33,12 +33,12 @@ function findExecPath(version: string, env?: NodeJS.ProcessEnv): string {
  */
 export default function call(version: string, workerPath: string, options?: CallOptions, ...args: unknown[]): unknown {
   const opts = options || {};
-  const callbacks = opts.callbacks !== false; // default true
+  const callbacks = opts.callbacks === true; // default false (matches function-exec-sync)
   const useSpawnOptions = opts.spawnOptions === true; // default false
   const env = opts.env || process.env;
 
   // Check if current process satisfies the version constraint
-  const currentSatisfies = semver.satisfies(process.version, version);
+  const currentSatisfies = version === process.version || semver.satisfies(process.version, version);
 
   if (currentSatisfies) {
     // Local execution
@@ -82,8 +82,8 @@ export default function call(version: string, workerPath: string, options?: Call
  * @returns A function that calls the worker with the bound version/path/options
  */
 export function bind(version: string, workerPath: string, options?: BindOptions): BoundCaller {
-  const opts = { callbacks: true, ...options };
-  const callbacks = opts.callbacks !== false;
+  const opts = options || {};
+  const callbacks = opts.callbacks === true; // default false (matches function-exec-sync)
   const useSpawnOptions = opts.spawnOptions === true;
   const env = opts.env || process.env;
 
@@ -100,7 +100,7 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
     const execute = (): unknown => {
       // Lazy initialization on first call
       if (!initialized) {
-        currentSatisfies = semver.satisfies(process.version, version);
+        currentSatisfies = version === process.version || semver.satisfies(process.version, version);
         if (!currentSatisfies) {
           cachedExecPath = findExecPath(version, opts.env);
         }

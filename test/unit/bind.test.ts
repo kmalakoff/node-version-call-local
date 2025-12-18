@@ -82,31 +82,19 @@ describe('bind', () => {
   });
 
   describe('default options', () => {
-    it('defaults callbacks to true', () => {
-      const fnPath = path.join(DATA, 'callbacks.cjs');
+    it('defaults callbacks to false', () => {
+      const fnPath = path.join(DATA, 'processVersion.cjs');
       const worker = bind(process.version, fnPath);
-
-      let called = false;
-      worker('value', (err: unknown, res: unknown) => {
-        called = true;
-        assert.equal(err, null);
-        assert.equal(res, 'value');
-      });
-      assert.equal(called, true);
+      const result = worker() as string;
+      assert.equal(result[0], 'v');
     });
 
     it('defaults env to process.env', () => {
-      const fnPath = path.join(DATA, 'envCheck.cjs');
+      const fnPath = path.join(DATA, 'envCheckSync.cjs');
       process.env.TEST_ENV_VAR = 'from-process-env';
       const worker = bind(process.version, fnPath);
-
-      let called = false;
-      worker((err: unknown, result: unknown) => {
-        called = true;
-        assert.equal(err, null);
-        assert.equal(result, 'from-process-env');
-      });
-      assert.equal(called, true);
+      const result = worker() as string;
+      assert.equal(result, 'from-process-env');
       delete process.env.TEST_ENV_VAR;
     });
   });

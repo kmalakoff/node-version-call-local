@@ -47,13 +47,15 @@ describe('call', () => {
 
   describe('return arguments', () => {
     addTests((version) => () => {
+      const major = version.indexOf('.') >= 0 ? +version.split('.')[0] : +process.versions.node.split('.')[0];
+
       const args = [
         { field2: 1 },
         1,
         function hey() {
           return null;
         },
-        [typeof URL === 'undefined' ? null : new URL('https://hello.com'), typeof Map === 'undefined' ? null : new Map(), typeof Set === 'undefined' ? null : new Set()],
+        major > 0 ? [typeof URL === 'undefined' ? null : new URL('https://hello.com'), typeof Map === 'undefined' ? null : new Map(), typeof Set === 'undefined' ? null : new Set()] : [],
       ];
       const fnPath = path.join(DATA, 'returnArguments.cjs');
       const result = call(version, fnPath, { callbacks: false }, ...args);
