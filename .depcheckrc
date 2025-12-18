@@ -1,0 +1,1 @@
+ignores: ["node-version-use", "ts-dev-stack", "node-version-call-local", "function-exec-sync"]
