@@ -1,11 +1,10 @@
 import pathKey from 'env-path-key';
 import type functionExecSync from 'function-exec-sync';
 import Module from 'module';
-import type { satisfiesSemverSyncOptions } from 'node-exec-path';
 import { type SpawnOptions, spawnOptions } from 'node-version-utils';
 import semver from 'semver';
-import deriveInstallPath from './lib/deriveInstallPath.ts';
 
+import resolveVersion from './lib/resolveVersion.ts';
 import type { BindOptions, BoundCaller, CallerCallback, CallOptions } from './types.ts';
 
 export type * from './types.ts';
@@ -14,17 +13,6 @@ const _require = typeof require === 'undefined' ? Module.createRequire(import.me
 const SLEEP_MS = 60;
 
 let functionExec: typeof functionExecSync = null;
-let satisfiesSemverSync: (version: string, options?: satisfiesSemverSyncOptions) => string | null = null;
-
-function findExecPath(version: string, env?: NodeJS.ProcessEnv): string {
-  if (!satisfiesSemverSync) satisfiesSemverSync = _require('node-exec-path').satisfiesSemverSync;
-  const options = env ? { env } : {};
-  const execPath = satisfiesSemverSync(version, options);
-  if (!execPath) {
-    throw new Error(`node-version-call-local: No Node matching "${version}" found in PATH`);
-  }
-  return execPath;
-}
 
 /**
  * Call a function in a Node version found in PATH.
@@ -58,10 +46,9 @@ export default function call(version: string, workerPath: string, options?: Call
     return functionExec.apply(null, [execOptions, workerPath, ...args]);
   }
 
-  const execPath = findExecPath(version, opts.env);
+  const { execPath, installPath } = resolveVersion(version, { env: opts.env });
 
   if (useSpawnOptions) {
-    const installPath = deriveInstallPath(execPath);
     const execOptions = spawnOptions(installPath, { execPath, sleep: SLEEP_MS, callbacks, env } as SpawnOptions);
     return functionExec.apply(null, [execOptions, workerPath, ...args]);
   }
@@ -88,6 +75,7 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
   let initialized = false;
   let currentSatisfies: boolean;
   let cachedExecPath: string | null = null;
+  let cachedInstallPath: string | null = null;
 
   return function boundCaller(...args: unknown[]): unknown {
     const lastArg = args[args.length - 1];
@@ -96,7 +84,11 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
     const execute = (): unknown => {
       if (!initialized) {
         currentSatisfies = version === process.version || semver.satisfies(process.version, version);
-        if (!currentSatisfies) cachedExecPath = findExecPath(version, opts.env);
+        if (!currentSatisfies) {
+          const resolved = resolveVersion(version, { env: opts.env });
+          cachedExecPath = resolved.execPath;
+          cachedInstallPath = resolved.installPath;
+        }
         initialized = true;
       }
 
@@ -116,15 +108,12 @@ export function bind(version: string, workerPath: string, options?: BindOptions)
         return functionExec.apply(null, [execOptions, workerPath, ...args]);
       }
 
-      const execPath = cachedExecPath;
-
       if (useSpawnOptions) {
-        const installPath = deriveInstallPath(execPath);
-        const execOptions = spawnOptions(installPath, { execPath, sleep: SLEEP_MS, callbacks, env } as SpawnOptions);
+        const execOptions = spawnOptions(cachedInstallPath, { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env } as SpawnOptions);
         return functionExec.apply(null, [execOptions, workerPath, ...args]);
       }
 
-      const execOptions = { execPath, sleep: SLEEP_MS, callbacks, env };
+      const execOptions = { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env };
       return functionExec.apply(null, [execOptions, workerPath, ...args]);
     };
 
