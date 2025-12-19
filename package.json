@@ -1,6 +1,6 @@
 {
   "name": "node-version-call-local",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "description": "Call a function in a Node version found in PATH",
   "keywords": [
     "node",
