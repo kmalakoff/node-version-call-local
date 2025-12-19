@@ -62,6 +62,7 @@
     "@types/node": "*",
     "lodash.keys": "^4.2.0",
     "node-version-use": "*",
+    "pinkie-promise": "^2.0.1",
     "ts-dev-stack": "*",
     "tsds-config": "*"
   },

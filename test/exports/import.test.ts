@@ -1,9 +1,13 @@
 import assert from 'assert';
 
-import call, { bind } from 'node-version-call-local';
+import callDefault, { bind, call } from 'node-version-call-local';
 
 describe('exports .ts', () => {
   it('default export is call function', () => {
+    assert.equal(typeof callDefault, 'function');
+  });
+
+  it('named export call is a function', () => {
     assert.equal(typeof call, 'function');
   });
 

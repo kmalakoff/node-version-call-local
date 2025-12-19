@@ -12,63 +12,92 @@ npm install node-version-call-local
 
 ## Usage
 
-### Immediate call
+### Sync API (returns value, throws on error)
 
 ```javascript
-import call from 'node-version-call-local';
+import { callSync, bindSync } from 'node-version-call-local';
 
-// Call a worker in any Node > 0.12 found in PATH
-const result = call('>0.12', '/path/to/worker.js', { callbacks: true }, arg1, arg2);
+// Immediate call - returns value synchronously
+const result = callSync('>0.12', '/path/to/worker.js', {}, arg1, arg2);
+
+// Bound caller for repeated use
+const worker = bindSync('>0.12', '/path/to/worker.js', {});
+const result1 = worker(arg1);
+const result2 = worker(arg2);
 ```
 
-### Bound caller (for repeated calls)
+### Async API (callback or Promise)
 
 ```javascript
-import { bind } from 'node-version-call-local';
+import call, { bind } from 'node-version-call-local';
 
-// Create a bound caller
-const worker = bind('>0.12', '/path/to/worker.js', { callbacks: true });
+// With callback (last argument is function)
+call('>0.12', '/path/to/worker.js', {}, arg1, (err, result) => {
+  if (err) return console.error(err);
+  console.log(result);
+});
 
-// Call it multiple times
-worker(arg1, callback);
-worker(arg2, callback);
+// With Promise (no callback)
+const result = await call('>0.12', '/path/to/worker.js', {}, arg1);
+
+// Bound caller with callback
+const worker = bind('>0.12', '/path/to/worker.js', {});
+worker(arg1, (err, result) => { /* ... */ });
+
+// Bound caller with Promise
+const result = await worker(arg1);
 ```
 
 ## API
 
-### `call(version, workerPath, options?, ...args)`
+### Sync Functions
 
-Execute a file in a Node version found in PATH.
+#### `callSync(version, workerPath, options?, ...args)`
+
+Execute a file synchronously in a Node version found in PATH.
 
 - **version** - Semver constraint (`'>0.12'`, `'>=18'`, `'^16'`) or exact (`'v18.0.0'`)
 - **workerPath** - Path to the file to execute
 - **options** - Execution options (see below)
 - **args** - Arguments to pass to the worker
 
-Returns the result from the worker.
+Returns the result from the worker. Throws on error.
 
-### `bind(version, workerPath, options?)`
+#### `bindSync(version, workerPath, options?)`
 
-Create a bound caller for repeated use.
-
-- **version** - Semver constraint or exact version
-- **workerPath** - Path to the file to execute
-- **options** - Execution options (see below)
+Create a bound caller for repeated synchronous use.
 
 Returns a function `(...args) => result` that calls the worker.
+
+### Async Functions
+
+#### `call(version, workerPath, options?, ...args)`
+
+Execute a file asynchronously in a Node version found in PATH.
+
+- If last argument is a function, it's treated as a callback: `(err, result) => void`
+- Otherwise, returns a Promise
+
+#### `bind(version, workerPath, options?)`
+
+Create a bound caller for repeated async use.
+
+Returns a function that:
+- Takes a callback as last arg: `(...args, callback) => void`
+- Or returns a Promise: `(...args) => Promise<result>`
 
 ### Options
 
 ```typescript
 interface CallOptions {
-  callbacks?: boolean;      // Enable callback serialization (default: true)
-  spawnOptions?: boolean;   // Use spawnOptions for npm env setup (default: false)
+  callbacks?: boolean;      // Worker uses callback style (default: false)
+  spawnOptions?: boolean;   // Use spawnOptions for child process env setup (default: true)
   env?: NodeJS.ProcessEnv;  // Environment variables (default: process.env)
 }
 ```
 
-- **callbacks** - When `true`, the worker can use callbacks that get serialized across the process boundary
-- **spawnOptions** - When `true`, sets up proper npm environment (PATH, npm_* vars) for running npm commands
+- **callbacks** - Set to `true` if the worker function uses callback style (`fn(...args, callback)`) rather than returning a value or Promise
+- **spawnOptions** - When `true`, sets up proper environment (PATH, etc.) so child processes spawned by the worker use the correct Node version
 - **env** - Custom environment variables to pass to the worker
 
 ## Comparison with node-version-call
@@ -83,32 +112,37 @@ interface CallOptions {
 ## Example: HTTPS polyfill for old Node
 
 ```javascript
-import { call } from 'node-version-call-local';
+import { callSync } from 'node-version-call-local';
 
 const major = +process.versions.node.split('.')[0];
 const noHTTPS = major === 0;
 
-function fetchFile(url, callback) {
+function fetchFileSync(url) {
   if (noHTTPS) {
     // Current Node can't do HTTPS, find one that can
-    try {
-      const result = call('>0', __filename, { callbacks: true }, url);
-      callback(null, result);
-    } catch (err) {
-      callback(err);
-    }
-    return;
+    return callSync('>0', __filename, {}, url);
   }
-
   // Modern Node - fetch directly
-  https.get(url, callback);
+  return fetchSync(url);
+}
+```
+
+## Example: Async with Promise
+
+```javascript
+import call from 'node-version-call-local';
+
+async function fetchData(url) {
+  // Worker uses callback style internally
+  const result = await call('>10', '/path/to/worker.js', { callbacks: true }, url);
+  return result;
 }
 ```
 
 ## Example: npm install polyfill
 
 ```javascript
-import { bind } from 'node-version-call-local';
+import { bindSync } from 'node-version-call-local';
 
 const major = +process.versions.node.split('.')[0];
 
@@ -116,17 +150,15 @@ const major = +process.versions.node.split('.')[0];
 const workerPath = path.join(__dirname, 'workers', 'npmInstall.js');
 
 // Need spawnOptions for npm environment
-const npmInstall = bind('>10', workerPath, { callbacks: true, spawnOptions: true });
+const npmInstall = bindSync('>10', workerPath, { spawnOptions: true });
 
-function install(packageName, callback) {
+function install(packageName) {
   if (major > 10) {
     // Current Node is fine
-    runNpmInstall(packageName, callback);
-    return;
+    return runNpmInstall(packageName);
   }
-
   // Use older Node found in PATH
-  npmInstall(packageName, callback);
+  return npmInstall(packageName);
 }
 ```
 
