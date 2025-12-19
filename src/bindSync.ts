@@ -1,6 +1,7 @@
 import pathKey from 'env-path-key';
 import type functionExecSync from 'function-exec-sync';
 import Module from 'module';
+import { loadModuleSync } from 'module-compat';
 import { type SpawnOptions, spawnOptions } from 'node-version-utils';
 import semver from 'semver';
 
@@ -25,6 +26,8 @@ export default function bindSync(version: string, workerPath: string, options?: 
   const callbacks = opts.callbacks;
   const useSpawnOptions = opts.spawnOptions !== false; // default true
   const env = opts.env || process.env;
+  const moduleType = opts.moduleType || 'auto';
+  const interop = opts.interop || 'default';
 
   let initialized = false;
   let currentSatisfies: boolean;
@@ -52,11 +55,11 @@ export default function bindSync(version: string, workerPath: string, options?: 
           throw new Error(`node-version-call-local: options.env missing required ${PATH_KEY}`);
         }
         if (!functionExec) functionExec = _require('function-exec-sync');
-        const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks, env };
+        const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
         return functionExec.apply(null, [execOptions, workerPath, ...args]);
       }
-      // Direct require for sync workers
-      const fn = _require(workerPath);
+      // Use loadModuleSync for ESM support
+      const fn = loadModuleSync(workerPath, { moduleType, interop });
       return typeof fn === 'function' ? fn.apply(null, args) : fn;
     }
 
@@ -64,11 +67,11 @@ export default function bindSync(version: string, workerPath: string, options?: 
     if (!functionExec) functionExec = _require('function-exec-sync');
 
     if (useSpawnOptions) {
-      const execOptions = spawnOptions(cachedInstallPath, { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env } as SpawnOptions);
+      const execOptions = spawnOptions(cachedInstallPath, { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop } as SpawnOptions);
       return functionExec.apply(null, [execOptions, workerPath, ...args]);
     }
 
-    const execOptions = { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env };
+    const execOptions = { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
     return functionExec.apply(null, [execOptions, workerPath, ...args]);
   };
 }
