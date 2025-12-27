@@ -81,26 +81,16 @@ export default function bind(version: string, workerPath: string, options?: Bind
       return functionExec.apply(null, [execOptions, workerPath, ...args]);
     };
 
-    // Callback mode
-    if (callback) {
+    const worker = (execute, cb) => {
       try {
         const result = execute();
-        callback(null, result);
-        return undefined;
+        cb(null, result);
       } catch (err) {
-        callback(err);
-        return undefined;
+        cb(err);
       }
-    }
+    };
 
-    // Promise mode
-    return new Promise((resolve, reject) => {
-      try {
-        const result = execute();
-        resolve(result);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    if (callback) return worker(execute, callback);
+    return new Promise((resolve, reject) => worker(execute, (err, result) => (err ? reject(err) : resolve(result))));
   };
 }
