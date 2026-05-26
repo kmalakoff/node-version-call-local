@@ -1,5 +1,4 @@
 import pathKey from 'env-path-key';
-import type functionExecSync from 'function-exec-sync';
 import Module from 'module';
 import { loadModuleSync } from 'module-compat';
 import { type SpawnOptions, spawnOptions } from 'node-version-utils';
@@ -20,7 +19,7 @@ const SLEEP_MS = 60;
  * @param options - Execution options
  * @returns A function that calls the worker synchronously with the bound version/path/options
  */
-let functionExec: typeof functionExecSync = null;
+let functionExec: ((...args: unknown[]) => unknown) | null = null;
 export default function bindSync(version: string, workerPath: string, options?: BindOptions): BoundSyncCaller {
   const opts = options || {};
   const callbacks = opts.callbacks;
@@ -56,7 +55,7 @@ export default function bindSync(version: string, workerPath: string, options?: 
         }
         if (!functionExec) functionExec = _require('function-exec-sync');
         const execOptions = { execPath: process.execPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
-        return functionExec.apply(null, [execOptions, workerPath, ...args]);
+        return functionExec?.(execOptions as unknown, workerPath, ...args);
       }
       // Use loadModuleSync for ESM support
       const fn = loadModuleSync(workerPath, { moduleType, interop });
@@ -67,11 +66,11 @@ export default function bindSync(version: string, workerPath: string, options?: 
     if (!functionExec) functionExec = _require('function-exec-sync');
 
     if (useSpawnOptions) {
-      const execOptions = spawnOptions(cachedInstallPath, { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop } as SpawnOptions);
-      return functionExec.apply(null, [execOptions, workerPath, ...args]);
+      const execOptions = spawnOptions(cachedInstallPath!, { execPath: cachedExecPath!, sleep: SLEEP_MS, callbacks, env, moduleType, interop } as SpawnOptions);
+      return functionExec?.(execOptions as unknown, workerPath, ...args);
     }
 
-    const execOptions = { execPath: cachedExecPath, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
-    return functionExec.apply(null, [execOptions, workerPath, ...args]);
+    const execOptions = { execPath: cachedExecPath!, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
+    return functionExec?.(execOptions as unknown, workerPath, ...args);
   };
 }

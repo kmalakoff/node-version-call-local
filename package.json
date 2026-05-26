@@ -59,8 +59,10 @@
     "semver": "5.7.2"
   },
   "devDependencies": {
+    "@types/lodash.keys": "^4.2.9",
     "@types/mocha": "*",
     "@types/node": "*",
+    "@types/semver": "^7.7.1",
     "lodash.keys": "^4.2.0",
     "node-version-use": "*",
     "pinkie-promise": "^2.0.1",
