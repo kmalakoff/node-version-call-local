@@ -15,7 +15,7 @@
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">type</span> <span class="tsd-kind-type-alias">CallOptions</span> <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#callbacks">callbacks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#env">env</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">NodeJS.ProcessEnv</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#interop">interop</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">InteropMode</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#moduletype">moduleType</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">&quot;auto&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">ModuleType</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#spawnoptions">spawnOptions</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L6">types.ts:6</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L6">types.ts:6</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -38,35 +38,35 @@
 <div class="tsd-comment tsd-typography"><p>Worker uses callback style (fn(...args, callback)) rather than returning value/Promise</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L8">types.ts:8</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L8">types.ts:8</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="env"><code class="tsd-tag">Optional</code><span>env</span><a href="#env" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">env</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">NodeJS.ProcessEnv</span></div>
 <div class="tsd-comment tsd-typography"><p>Environment variables (default: process.env)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L12">types.ts:12</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L12">types.ts:12</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="interop"><code class="tsd-tag">Optional</code><span>interop</span><a href="#interop" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">interop</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">InteropMode</span></div>
 <div class="tsd-comment tsd-typography"><p>How to handle ESM default exports: 'default' (default), 'raw', or 'typescript'</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L16">types.ts:16</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L16">types.ts:16</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="moduletype"><code class="tsd-tag">Optional</code><span>module<wbr/>Type</span><a href="#moduletype" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">moduleType</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">&quot;auto&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">ModuleType</span></div>
 <div class="tsd-comment tsd-typography"><p>Module type detection: 'auto' (default), 'module', or 'commonjs'</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L14">types.ts:14</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L14">types.ts:14</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="spawnoptions"><code class="tsd-tag">Optional</code><span>spawn<wbr/>Options</span><a href="#spawnoptions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">spawnOptions</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Apply spawn options for child process env setup (default: true)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/ceff9f070afc03b501f66cfbe09d0ec9b8b986d4/src/types.ts#L10">types.ts:10</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/kmalakoff/node-version-call-local/blob/03ad0914e75f190c3a0a15028b497bed9834a99f/src/types.ts#L10">types.ts:10</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
