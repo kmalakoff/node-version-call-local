@@ -66,11 +66,11 @@ export default function bindSync(version: string, workerPath: string, options?: 
     if (!functionExec) functionExec = _require('function-exec-sync');
 
     if (useSpawnOptions) {
-      const execOptions = spawnOptions(cachedInstallPath!, { execPath: cachedExecPath!, sleep: SLEEP_MS, callbacks, env, moduleType, interop } as SpawnOptions);
+      const execOptions = spawnOptions(cachedInstallPath as string, { execPath: cachedExecPath as string, sleep: SLEEP_MS, callbacks, env, moduleType, interop } as SpawnOptions);
       return functionExec?.(execOptions as unknown, workerPath, ...args);
     }
 
-    const execOptions = { execPath: cachedExecPath!, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
+    const execOptions = { execPath: cachedExecPath as string, sleep: SLEEP_MS, callbacks, env, moduleType, interop };
     return functionExec?.(execOptions as unknown, workerPath, ...args);
   };
 }
